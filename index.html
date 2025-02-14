@@ -22,6 +22,7 @@
             width: 45%;
             border: 3px solid black;
             padding: 20px;
+            background-color: white;
             border-radius: 10px;
         }
         .word-display {
@@ -48,20 +49,18 @@
     </style>
 </head>
 <body>
-    <h1>Κρεμάλα της Αγάπης </h1>
-    <p>Δημιουργία: Παναγιώτης Δόμβρος 2025 (CC BY-NC)</p>
-
+    <h1>Κρεμάλα της Αγάπης 💘🎮</h1>
+    
     <div class="game-container">
         <div class="player player1">
-            <h2>Παίκτης 1 </h2>
+            <h2>Παίκτης 1 💙</h2>
             <p id="hint1"></p>
             <p class="word-display" id="word1"></p>
             <pre class="hangman" id="hangman1"></pre>
             <div class="keyboard" id="keyboard1"></div>
             <p id="message1" class="win-message"></p>
-            <button id="newWord1">Νέα λέξη</button>
         </div>
-
+        
         <div class="player player2">
             <h2>Παίκτης 2 ❤️</h2>
             <p id="hint2"></p>
@@ -69,19 +68,37 @@
             <pre class="hangman" id="hangman2"></pre>
             <div class="keyboard" id="keyboard2"></div>
             <p id="message2" class="win-message"></p>
-            <button id="newWord2">Νέα λέξη</button>
-
         </div>
     </div>
-
+    
     <audio id="failSound" src="fail-sound.mp3"></audio>
     <audio id="successSound" src="success-sound.mp3"></audio>
-
+    
     <script>
-        const words = [ /* ... (η ίδια λίστα λέξεων) ... */ ];
-
+        const words = [
+            { word: "ΑΓΑΠΗ", hint: "Έντονο συναίσθημα στοργής." },
+            { word: "ΕΡΩΤΑΣ", hint: "Βαθύ συναίσθημα αγάπης και έλξης." },
+            { word: "ΡΟΜΑΝΤΙΚΟ", hint: "Αυτό που δημιουργεί συναισθήματα τρυφερότητας." },
+            { word: "ΠΑΘΟΣ", hint: "Έντονη επιθυμία ή συναίσθημα." },
+            { word: "ΣΥΝΑΙΣΘΗΜΑ", hint: "Κατάσταση της ψυχής." },
+            { word: "ΦΙΛΙΑ", hint: "Αμοιβαία στοργή και εμπιστοσύνη." },
+            { word: "ΕΝΘΟΥΣΙΑΣΜΟΣ", hint: "Έντονη ενέργεια και ενδιαφέρον." },
+            { word: "ΑΦΗΓΗΣΗ", hint: "Η τέχνη της αφήγησης ιστοριών." },
+            { word: "ΕΛΠΙΔΑ", hint: "Η πίστη σε κάτι καλύτερο." },
+            { word: "ΟΝΕΙΡΟ", hint: "Εικόνες και σκέψεις στον ύπνο." },
+            { word: "ΧΑΡΑ", hint: "Έντονο συναίσθημα ευτυχίας." },
+            { word: "ΚΑΜΠΑΝΑ", hint: "Συσκευή που κάνει ήχο για προειδοποίηση." },
+            { word: "ΜΟΥΣΙΚΗ", hint: "Η τέχνη των ήχων και των μελωδιών." },
+            { word: "ΦΩΤΟΓΡΑΦΙΑ", hint: "Η τέχνη της λήψης εικόνων." },
+            { word: "ΑΣΤΕΡΙ", hint: "Ουράνιο σώμα που λάμπει τη νύχτα." },
+            { word: "ΘΑΛΑΣΣΑ", hint: "Μεγάλη μάζα αλμυρού νερού." },
+            { word: "ΟΥΡΑΝΟΣ", hint: "Ο χώρος πάνω από τη γη." },
+            { word: "ΓΕΛΙΟ", hint: "Ήχος που εκφράζει ευτυχία." },
+            { word: "ΦΩΤΙΑ", hint: "Φωτεινή και θερμή φλόγα." },
+            { word: "ΑΝΘΟΣ", hint: "Το όμορφο μέρος ενός φυτού." }
+        ];
+        
         function setupGame(playerId) {
-            let gameStarted = false; // Flag to track if the game has started for the player
             let randomIndex = Math.floor(Math.random() * words.length);
             let wordObject = words[randomIndex];
             let word = wordObject.word;
@@ -89,27 +106,23 @@
             document.getElementById(`word${playerId}`).textContent = displayWord;
             document.getElementById(`hint${playerId}`).textContent = "Στοιχείο: " + wordObject.hint;
             let mistakes = 0;
-            let hangmanStages = [ /* ... (οι ίδιες εικόνες κρεμάλας) ... */ ];
-
+            let hangmanStages = [
+                "\n\n\n\n", 
+                "\n\n\n__|__", 
+                "  |\n  |\n__|__", 
+                "  O\n  |\n  |\n__|__", 
+                "  O\n /|\n  |\n__|__", 
+                "  O\n /|\\\n  |\n__|__", 
+                "  O\n /|\\\n  |\n / \\ \n__|__"
+            ];
+            
             let keyboardDiv = document.getElementById(`keyboard${playerId}`);
             keyboardDiv.innerHTML = "";
-
-            document.getElementById(`newWord${playerId}`).addEventListener("click", () => {
-                if (!gameStarted) {
-                    randomIndex = Math.floor(Math.random() * words.length);
-                    wordObject = words[randomIndex];
-                    word = wordObject.word;
-                    displayWord = "_".repeat(word.length);
-                    document.getElementById(`word${playerId}`).textContent = displayWord;
-                    document.getElementById(`hint${playerId}`).textContent = "Στοιχείο: " + wordObject.hint;
-                }
-            });
-
+            
             "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ".split('').forEach(letter => {
                 let button = document.createElement("button");
                 button.textContent = letter;
                 button.addEventListener("click", () => {
-                    gameStarted = true; // Set the flag when a letter is chosen
                     if (word.includes(letter)) {
                         let newDisplay = displayWord.split("").map((char, i) => (word[i] === letter ? letter : char)).join("");
                         displayWord = newDisplay;
@@ -120,12 +133,12 @@
                         document.getElementById("failSound").play();
                     }
                     button.disabled = true;
-
+                    
                     if (mistakes >= 6) {
                         freezeGame(playerId === 1 ? 2 : 1);
                     }
                     if (!displayWord.includes("_")) {
-                        document.getElementById(`message${playerId}`).textContent = "ΜΠΡΑΒΟ! Κέρδισες! ";
+                        document.getElementById(`message${playerId}`).textContent = "ΜΠΡΑΒΟ! Κέρδισες! 🎉😍";
                         document.getElementById("successSound").play();
                         freezeGame(playerId === 2 ? 1 : 2);
                     }
@@ -133,11 +146,11 @@
                 keyboardDiv.appendChild(button);
             });
         }
-
+        
         function freezeGame(loser) {
             document.querySelector(`.player${loser}`).classList.add("frozen");
         }
-
+        
         setupGame(1);
         setupGame(2);
     </script>
