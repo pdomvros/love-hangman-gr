@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Κρεμάλα της Αγάπης</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #ffe6e6;
+        }
+        h1 {
+            color: #ff3366;
+        }
+        .game-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .player {
+            width: 45%;
+            border: 3px solid black;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+        }
+        .word-display {
+            font-size: 24px;
+            letter-spacing: 5px;
+            margin: 20px 0;
+        }
+        .keyboard button {
+            font-size: 20px;
+            padding: 10px;
+            margin: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .player1 { border-color: blue; color: blue; }
+        .player2 { border-color: red; color: red; }
+        .hangman {
+            font-size: 20px;
+            white-space: pre;
+            font-family: monospace;
+        }
+        .frozen { pointer-events: none; opacity: 0.5; }
+        .win-message { font-size: 24px; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+    <h1>Κρεμάλα της Αγάπης</h1>
+    <p>Δημιουργία: Παναγιώτης Δόμβρος 2025 (CC BY-NC)</p>
+
+    <div class="game-container">
+        <div class="player player1">
+            <h2>Παίκτης 1 </h2>
+            <p id="hint1"></p>
+            <p class="word-display" id="word1"></p>
+            <pre class="hangman" id="hangman1"></pre>
+            <div class="keyboard" id="keyboard1"></div>
+            <p id="message1" class="win-message"></p>
+        </div>
+
+        <div class="player player2">
+            <h2>Παίκτης 2 ❤️</h2>
+            <p id="hint2"></p>
+            <p class="word-display" id="word2"></p>
+            <pre class="hangman" id="hangman2"></pre>
+            <div class="keyboard" id="keyboard2"></div>
+            <p id="message2" class="win-message"></p>
+        </div>
+    </div>
+
+    <audio id="errorSound" src="error.mp3"></audio>
+    <audio id="successSound" src="success.mp3"></audio>
+
+    <script>
+        const words = [
+            { word: "ΑΓΑΠΗ", hint: "Έντονο συναίσθημα στοργής." },
+            { word: "ΕΡΩΤΑΣ", hint: "Βαθύ συναίσθημα αγάπης και έλξης." },
+            { word: "ΡΟΜΑΝΤΙΚΟ", hint: "Αυτό που δημιουργεί συναισθήματα τρυφερότητας." },
+            { word: "ΠΑΘΟΣ", hint: "Έντονη επιθυμία ή συναίσθημα." },
+            { word: "ΣΥΝΑΙΣΘΗΜΑ", hint: "Κατάσταση της ψυχής." },
+            { word: "ΦΙΛΙΑ", hint: "Σχέση αμοιβαίας αγάπης και εμπιστοσύνης." },
+            { word: "ΟΙΚΟΓΕΝΕΙΑ", hint: "Σύνολο ανθρώπων που συνδέονται με δεσμούς αίματος." },
+            { word: "ΕΥΤΥΧΙΑ", hint: "Κατάσταση απόλυτης ικανοποίησης και χαράς." },
+            { word: "ΧΑΜΟΓΕΛΟ", hint: "Έκφραση χαράς ή ευχαρίστησης." },
+            { word: "ΑΓΚΑΛΙΑ", hint: "Σφιχτός εναγκαλισμός." },
+            { word: "ΦΙΛΗΜΑ", hint: "Επαφή των χειλιών με τα χείλη άλλου προσώπου." },
+            { word: "ΚΑΡΔΙΑ", hint: "Όργανο του σώματος που συμβολίζει την αγάπη." },
+            { word: "ΔΩΡΟ", hint: "Αντικείμενο που δίνεται με αγάπη." },
+            { word: "ΤΡΥΦΕΡΟΤΗΤΑ", hint: "Συμπεριφορά που δείχνει αγάπη και φροντίδα." },
+            { word: "ΕΜΠΙΣΤΟΣΥΝΗ", hint: "Αίσθημα βεβαιότητας για την αξιοπιστία κάποιου." },
+            { word: "ΣΕΒΑΣΜΟΣ", hint: "Αίσθημα εκτίμησης και αναγνώρισης." },
+            { word: "ΥΠΟΜΟΝΗ", hint: "Η ικανότητα να περιμένεις κάτι με ηρεμία." },
+            { word: "ΑΛΛΗΛΕΓΓΥΗ", hint: "Υποστήριξη και βοήθεια προς τον άλλον." },
+            { word: "ΕΛΠΙΔΑ", hint: "Προσδοκία για κάτι καλό που θα συμβεί." },
+            { word: "ΟΝΕΙΡΟ", hint: "Σχέδιο ή επιθυμία για το μέλλον." }
+        ];
+
+        function setupGame(playerId) {
+            let randomIndex = Math.floor(Math.random() * words.length);
+            let wordObject = words[randomIndex];
+            let word = wordObject.word;
+            let displayWord = "_".repeat(word.length);
+            document.getElementById(`word${playerId}`).textContent = displayWord;
+            document.getElementById(`hint${playerId}`).textContent = "Στοιχείο: " + wordObject.hint;
+            let mistakes = 0;
+            let hangmanStages = [
+                "\n\n\n\n",
+                "\n\n\n__|__",
+                " |\n |\n__|__",
+                " O\n |\n |\n__|__",
+                " O\n /|\n |\n__|__",
+                " O\n /|\\\n |\n__|__",
+                " O\n /|\\\n |\n / \\ \n__|__"
+            ];
+
+            let keyboardDiv = document.getElementById(`keyboard${playerId}`);
+            keyboardDiv.innerHTML = "";
+
+            "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ".split('').forEach(letter => {
+                let button = document.createElement("button");
+                button.textContent = letter;
+                button.addEventListener("click", () => {
+                    if (word.includes(letter)) {
+                        let newDisplay = displayWord.split("").map((char, i) => (word[i] === letter ? letter : char)).join("");
+                        displayWord = newDisplay;
+                        document.getElementById(`word${playerId}`).textContent = displayWord;
+                    } else {
+                        mistakes++;
+                        document.getElementById(`hangman${playerId}`).textContent = hangmanStages[mistakes];
+                        document.getElementById("errorSound").play();
+                    }
+                    button.disabled = true;
+
+                    if (mistakes >= 6) {
+                        freezeGame(playerId === 1 ? 2 : 1);
+                    }
+                    if (!displayWord.includes("_")) {
+                        document.getElementById(`message${playerId}`).textContent = "ΜΠΡΑΒΟ! Κέρδισες! ";
+                        document.getElementById("successSound").play();
+                        freezeGame(playerId === 2 ? 1 : 2);
+                    }
+                });
+                keyboardDiv.appendChild(button);
+            });
+        }
+
+        function freezeGame(loser) {
+            document.querySelector(`.player${loser}`).classList.add("frozen");
+        }
+
+        setupGame(1);
+        setupGame(2);
+    </script>
+</body>
+</html>
