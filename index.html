@@ -130,7 +130,7 @@
                     } else {
                         mistakes++;
                         document.getElementById(`hangman${playerId}`).textContent = hangmanStages[mistakes];
-                        document.getElementById("failSound").play();
+                        document.getElementById("fail-sound.mp3").play();
                     }
                     button.disabled = true;
                     
@@ -139,7 +139,7 @@
                     }
                     if (!displayWord.includes("_")) {
                         document.getElementById(`message${playerId}`).textContent = "ΜΠΡΑΒΟ! Κέρδισες! 🎉😍";
-                        document.getElementById("successSound").play();
+                        document.getElementById("sound.mp3").play();
                         freezeGame(playerId === 2 ? 1 : 2);
                     }
                 });
